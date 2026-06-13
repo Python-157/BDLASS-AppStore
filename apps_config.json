@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Kamera",
+    "file": "kamera_app.py",
+    "installer": "kamera_installer.py",
+    "icon": "kamera_icon.png",
+    "description": "Macht Fotos und speichert sie als PNG.",
+    "standard": false
+  }
+]

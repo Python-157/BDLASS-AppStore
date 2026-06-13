@@ -1,18 +1,18 @@
 [
   {
+    "name": "BDLASS Defender",
+    "file": "virenschutz_app.py",
+    "installer": "virenschutz_installer.py",
+    "icon": "defender_icon.png",
+    "description": "Standard-Schutz (B-Level) mit Upgrade auf Pro (C-Level).",
+    "standard": false
+  },
+  {
     "name": "Kamera",
     "file": "kamera_app.py",
     "installer": "kamera_installer.py",
     "icon": "kamera_icon.png",
     "description": "Macht Fotos und speichert sie als PNG.",
     "standard": false
-  },
-  {
-    "name": "BDLASS Defender",
-    "file": "virenschutz_app.py",
-    "installer": "virenschutz_installer.py",
-    "icon": "defender_icon.png",
-    "description": "Standard-Schutz (B-Level) mit Upgrade auf Pro (C-Level).",
-    "standard": false"
   }
 ]

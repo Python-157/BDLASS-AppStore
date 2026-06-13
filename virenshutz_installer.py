@@ -25,18 +25,14 @@ def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-# ---------------------------------------------------
-# 1. AppData + Config anlegen
-# ---------------------------------------------------
+# 1. AppData + Config
 os.makedirs(APPDATA, exist_ok=True)
 os.makedirs(os.path.join(APPDATA, "quarantaene"), exist_ok=True)
 
 if not os.path.exists(DEFENDER_CFG):
     save_json(DEFENDER_CFG, {"pro": False})
 
-# ---------------------------------------------------
 # 2. BDLASS Defender App schreiben
-# ---------------------------------------------------
 virenschutz_code = r'''
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -166,7 +162,6 @@ class BDLASSDefender:
         self.ask_quarantine(suspicious)
 
     def folder_scan(self):
-        from tkinter import filedialog
         path = filedialog.askdirectory()
         if not path:
             return
@@ -216,7 +211,6 @@ class BDLASSDefender:
             messagebox.showinfo("BDLASS Defender", "Pro-Schutz ist bereits aktiviert.")
             return
 
-        # Aktuell: Sofort freischalten (später: Zahlung)
         self.cfg["pro"] = True
         save_json(CFG, self.cfg)
         self.update_mode_label()
@@ -231,9 +225,7 @@ os.makedirs(APPS, exist_ok=True)
 with open(os.path.join(APPS, "virenschutz_app.py"), "w", encoding="utf-8") as f:
     f.write(virenschutz_code)
 
-# ---------------------------------------------------
-# 3. Icon aus Base64 erzeugen
-# ---------------------------------------------------
+# 3. Icon
 icon_base64 = (
     "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAxUlEQVRYhe2WsQ3CMAxF3xI"
     "kQBLkAEuQAS5ABKkQBLkAEuQATqVQnZ2dnbfZt2kqS7u7u7u7u7u7u7u7u7u7u7u7u7u7u"
@@ -247,9 +239,7 @@ os.makedirs(IMG, exist_ok=True)
 with open(os.path.join(IMG, "defender_icon.png"), "wb") as f:
     f.write(base64.b64decode(icon_base64))
 
-# ---------------------------------------------------
-# 4. apps_info.json aktualisieren
-# ---------------------------------------------------
+# 4. apps_info.json
 apps_info = load_json(APPS_INFO, {})
 apps_info["virenschutz_app.py"] = {
     "paths": [
@@ -260,9 +250,7 @@ apps_info["virenschutz_app.py"] = {
 }
 save_json(APPS_INFO, apps_info)
 
-# ---------------------------------------------------
-# 5. shortcuts.json aktualisieren
-# ---------------------------------------------------
+# 5. shortcuts.json
 shortcuts = load_json(SHORTCUTS, [])
 shortcuts.append({
     "name": "BDLASS Defender",
@@ -271,15 +259,14 @@ shortcuts.append({
 })
 save_json(SHORTCUTS, shortcuts)
 
-# ---------------------------------------------------
-# 6. apps_config.json aktualisieren (für Apps-Tab)
-# ---------------------------------------------------
+# 6. apps_config.json
 apps_cfg = load_json(APPS_CFG, [])
 exists = any(a.get("file") == "virenschutz_app.py" for a in apps_cfg)
 if not exists:
     apps_cfg.append({
         "name": "BDLASS Defender",
         "file": "virenschutz_app.py",
+        "installer": "virenschutz_installer.py",
         "icon": "defender_icon.png",
         "description": "Standard-Schutz (B-Level) mit Upgrade auf Pro (C-Level).",
         "standard": False

@@ -2,24 +2,21 @@ import os
 import json
 import base64
 
-# Basis-Pfade
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS = os.path.join(BASE, "apps")
 IMG = os.path.join(BASE, "images")
 APPDATA = os.path.join(APPS, "appdata", "kamera_app")
 APPS_INFO = os.path.join(APPS, "apps_info.json")
 SHORTCUTS = os.path.join(BASE, "shortcuts.json")
-
-# ---------------------------------------------------
-# Hilfsfunktionen
-# ---------------------------------------------------
+APPS_CFG = os.path.join(APPS, "apps_config.json")
 
 def load_json(path, default):
     if not os.path.exists(path):
         return default
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return json.loads(f.read().strip() or "{}")
+            d = f.read().strip()
+            return json.loads(d) if d else default
     except:
         return default
 
@@ -27,11 +24,11 @@ def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-# ---------------------------------------------------
-# 1. Kamera-App erstellen
-# ---------------------------------------------------
+# 1. AppData
+os.makedirs(os.path.join(APPDATA, "fotos"), exist_ok=True)
 
-kamera_app_code = r'''
+# 2. Kamera-App
+kamera_code = r'''
 import tkinter as tk
 import cv2
 from PIL import Image, ImageTk
@@ -43,6 +40,8 @@ APPDATA = os.path.join(BASE, "apps", "appdata", "kamera_app", "fotos")
 
 class KameraApp:
     def __init__(self):
+        os.makedirs(APPDATA, exist_ok=True)
+
         self.root = tk.Tk()
         self.root.title("Kamera")
         self.root.geometry("800x600")
@@ -81,39 +80,21 @@ if __name__ == "__main__":
     KameraApp()
 '''
 
-# App-Datei schreiben
 os.makedirs(APPS, exist_ok=True)
 with open(os.path.join(APPS, "kamera_app.py"), "w", encoding="utf-8") as f:
-    f.write(kamera_app_code)
+    f.write(kamera_code)
 
-# ---------------------------------------------------
-# 2. AppData Ordner erstellen
-# ---------------------------------------------------
-
-os.makedirs(os.path.join(APPDATA, "fotos"), exist_ok=True)
-
-# ---------------------------------------------------
-# 3. Icon aus Base64 erzeugen
-# ---------------------------------------------------
-
-# Beispiel-Icon (schwarzes 32x32 PNG)
+# 3. Icon (Dummy)
 icon_base64 = (
-    "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIElEQVR4nO3BMQEAAADCoPVPbQ0PoAAAAAAAAAAA"
-    "AAAAAAAAAAAAAD4G4oAAWcZk90AAAAASUVORK5CYII="
+    "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIElEQVRYhe3BMQEAAADCoPVPbQhPoAAAAAAAAAAA"
+    "AAAAAAAAAAAAAPgG4oABYtXK0QAAAABJRU5ErkJggg=="
 )
-
-icon_bytes = base64.b64decode(icon_base64)
-
 os.makedirs(IMG, exist_ok=True)
 with open(os.path.join(IMG, "kamera_icon.png"), "wb") as f:
-    f.write(icon_bytes)
+    f.write(base64.b64decode(icon_base64))
 
-# ---------------------------------------------------
-# 4. apps_info.json aktualisieren
-# ---------------------------------------------------
-
+# 4. apps_info.json
 apps_info = load_json(APPS_INFO, {})
-
 apps_info["kamera_app.py"] = {
     "paths": [
         "apps/kamera_app.py",
@@ -121,13 +102,9 @@ apps_info["kamera_app.py"] = {
         "images/kamera_icon.png"
     ]
 }
-
 save_json(APPS_INFO, apps_info)
 
-# ---------------------------------------------------
-# 5. Desktop-Shortcut hinzufügen
-# ---------------------------------------------------
-
+# 5. shortcuts.json
 shortcuts = load_json(SHORTCUTS, [])
 shortcuts.append({
     "name": "Kamera",
@@ -135,5 +112,19 @@ shortcuts.append({
     "icon": "kamera_icon.png"
 })
 save_json(SHORTCUTS, shortcuts)
+
+# 6. apps_config.json
+apps_cfg = load_json(APPS_CFG, [])
+exists = any(a.get("file") == "kamera_app.py" for a in apps_cfg)
+if not exists:
+    apps_cfg.append({
+        "name": "Kamera",
+        "file": "kamera_app.py",
+        "installer": "kamera_installer.py",
+        "icon": "kamera_icon.png",
+        "description": "Macht Fotos und speichert sie als PNG.",
+        "standard": False
+    })
+    save_json(APPS_CFG, apps_cfg)
 
 print("Kamera-App erfolgreich installiert!")
